@@ -17,6 +17,8 @@ if (isPerformanceAllowed) {
   loadHotjar();
 }
 
+// ? is fb pixel needed?
+
 // add more delayed functionality here
 
 // Prevent the cookie banner from loading when running in library
@@ -25,7 +27,7 @@ if (!window.location.pathname.includes('srcdoc')
   loadScript('https://cdn.cookielaw.org/scripttemplates/otSDKStub.js', {
     type: 'text/javascript',
     charset: 'UTF-8',
-    'data-domain-script': 'bf50d0a6-e209-4fd4-ad2c-17da5f9e66a5',
+    'data-domain-script': 'bf50d0a6-e209-4fd4-ad2c-17da5f9e66a5', // ? oneTrust id?
   });
 }
 
@@ -54,11 +56,11 @@ async function loadGoogleTagManager() {
   (function (w, d, s, l, i) {
     w[l] = w[l] || []; w[l].push({ 'gtm.start': new Date().getTime(), event: 'gtm.js' }); const f = d.getElementsByTagName(s)[0]; const j = d.createElement(s); const
       dl = l !== 'dataLayer' ? `&l=${l}` : ''; j.async = true; j.src = `https://www.googletagmanager.com/gtm.js?id=${i}${dl}`; f.parentNode.insertBefore(j, f);
-  }(window, document, 'script', 'dataLayer', 'GTM-NDMV8BN'));
+  }(window, document, 'script', 'dataLayer', 'GTM-5DKKVHFL'));
 }
 
 // Hotjar
-async function loadHotjar() {
+async function loadHotjar() { // ? hotjar id? 3250756
   /* eslint-disable */
   (function(h,o,t,j,a,r){
     h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
@@ -68,3 +70,5 @@ async function loadHotjar() {
   })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
   /* eslint-enable */
 }
+
+// ? fb pixel id? 569835061642423
