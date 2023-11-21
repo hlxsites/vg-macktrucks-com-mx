@@ -17,6 +17,7 @@ import {
   toClassName,
   loadScript,
   getHref,
+  createOptimizedPicture,
 } from './lib-franklin.js';
 
 import {
@@ -25,6 +26,7 @@ import {
   loadDelayed,
   getPlaceholders,
   slugify,
+  variantsClassesToBEM,
 } from './common.js';
 import {
   isVideoLink,
@@ -274,6 +276,24 @@ export function decorateLinks(block) {
     });
 }
 
+function decorateSectionBackgrounds(main) {
+  const variantClasses = ['black-background', 'gray-background', 'background-with-dots'];
+
+  main.querySelectorAll(':scope > .section').forEach((section) => {
+    // transform background color variants into BEM classnames
+    variantsClassesToBEM(section.classList, variantClasses, 'section');
+
+    // If the section contains a background image
+    const src = section.dataset.backgroundImage;
+
+    if (src) {
+      const picture = createOptimizedPicture(src, '', false);
+      section.prepend(picture);
+      section.classList.add('section--with-background');
+    }
+  });
+}
+
 const createInpageNavigation = (main) => {
   const navItems = [];
   const tabItemsObj = [];
@@ -401,6 +421,7 @@ export function decorateMain(main, head) {
   buildAutoBlocks(main, head);
   decorateSections(main);
   decorateBlocks(main);
+  decorateSectionBackgrounds(main);
   decorateLinks(main);
 
   // Truck carousel
