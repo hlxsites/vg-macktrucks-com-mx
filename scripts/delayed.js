@@ -14,10 +14,7 @@ const isPerformanceAllowed = cookieSetting.includes(COOKIES.performance);
 
 if (isPerformanceAllowed) {
   loadGoogleTagManager();
-  loadHotjar();
 }
-
-// ? is fb pixel needed?
 
 // add more delayed functionality here
 
@@ -27,7 +24,7 @@ if (!window.location.pathname.includes('srcdoc')
   loadScript('https://cdn.cookielaw.org/scripttemplates/otSDKStub.js', {
     type: 'text/javascript',
     charset: 'UTF-8',
-    'data-domain-script': 'bf50d0a6-e209-4fd4-ad2c-17da5f9e66a5', // ? oneTrust id?
+    'data-domain-script': 'fec1940d-41f3-40b6-9d96-938da1135d85',
   });
 }
 
@@ -58,17 +55,3 @@ async function loadGoogleTagManager() {
       dl = l !== 'dataLayer' ? `&l=${l}` : ''; j.async = true; j.src = `https://www.googletagmanager.com/gtm.js?id=${i}${dl}`; f.parentNode.insertBefore(j, f);
   }(window, document, 'script', 'dataLayer', 'GTM-5DKKVHFL'));
 }
-
-// Hotjar
-async function loadHotjar() { // ? hotjar id? 3250756
-  /* eslint-disable */
-  (function(h,o,t,j,a,r){
-    h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
-    h._hjSettings={hjid:597204,hjsv:6}; a=o.getElementsByTagName('head')[0];
-    r=o.createElement('script');r.async=1; r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
-    a.appendChild(r);
-  })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
-  /* eslint-enable */
-}
-
-// ? fb pixel id? 569835061642423
