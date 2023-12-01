@@ -1135,3 +1135,25 @@ a.header__link {
     border-top: solid 1px var(--c-secondary-silver);
   }
 }
+
+/* custom header styles */
+.header__custom .header__actions {
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.header__custom--black {
+  background-color: var(--c-primary-black);
+}
+
+.header__custom--black .header__main-nav {
+  background-color: var(--c-primary-black);
+}
+
+.header__custom--black .header__main-nav-link.header__link {
+  color: var(--c-primary-white);
+}
+
+.header__custom--black .icon-bulldog svg {
+  --color-icon: var(--c-primary-white);
+}

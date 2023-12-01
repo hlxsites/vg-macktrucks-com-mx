@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://www.macktrucks.com/mack-news/</id>
     <title>Mack News</title>
-    <updated>2023-11-15T00:00:00.000Z</updated>
+    <updated>2023-11-21T00:00:00.000Z</updated>
     <generator>AEM Project Franklin News feed generator (GitHub action)</generator>
     <link rel="alternate" href="https://www.macktrucks.com/mack-news/"/>
     <subtitle>Get the latest news from Mack® Trucks and see how we are taking our Born Ready semi truck line to the next level with new innovations and technology.</subtitle>
@@ -2712,5 +2712,13 @@
         <updated>2023-11-15T00:00:00.000Z</updated>
         <content type="html"><![CDATA[GREENSBORO, NC (Nov. 15, 2023) – Mack Trucks today announced that members of the United Auto Workers union ratified a new five-year collective bargaining agreement with the company covering about 3,900 employees at facilities in Pennsylvania, Maryland and Florida.]]></content>
         <published>2023-11-15T00:00:00.000Z</published>
+    </entry>
+    <entry>
+        <title type="html"><![CDATA[Mack Trucks Adds Two New Full-Service EV Infrastructure Partners to its Turnkey Solutions Program | Mack Trucks]]></title>
+        <id>https://www.macktrucks.com/mack-news/2023/mack-trucks-adds-two-new-full-service-ev-infrastructure-partners-to-its-turnkey-solutions-program</id>
+        <link href="https://www.macktrucks.com/mack-news/2023/mack-trucks-adds-two-new-full-service-ev-infrastructure-partners-to-its-turnkey-solutions-program"/>
+        <updated>2023-11-21T00:00:00.000Z</updated>
+        <content type="html"><![CDATA[GREENSBORO, N.C. (Nov. 20, 2023) – Mack Trucks announced today that it expanded its comprehensive Turnkey Solutions program for Mack® battery-electric vehicle (BEV) customers with the addition of two new full-service partners, InCharge Energy and Blink Charging.]]></content>
+        <published>2023-11-21T00:00:00.000Z</published>
     </entry>
 </feed>
