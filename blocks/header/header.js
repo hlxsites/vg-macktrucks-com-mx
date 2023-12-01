@@ -1,7 +1,7 @@
 import {
   createElement, generateId, getTextLabel,
 } from '../../scripts/common.js';
-import { createOptimizedPicture, decorateIcons } from '../../scripts/lib-franklin.js';
+import { createOptimizedPicture, decorateIcons, getMetadata } from '../../scripts/lib-franklin.js';
 import { getAllElWithChildren } from '../../scripts/scripts.js';
 
 // domain examples: '.com', 'nicaragua.com', '.com.pa', '.ca'
@@ -47,46 +47,48 @@ const createLogo = (logoWrapper) => {
 
 const createMainLinks = (mainLinksWrapper) => {
   const list = mainLinksWrapper.querySelector('ul');
-
-  list.setAttribute('id', 'header-main-nav');
-  list.classList.add(`${blockClass}__main-nav`);
-  list.querySelectorAll('li').forEach((listItem) => {
-    const accordionContainer = document.createRange().createContextualFragment(`
-      <div class="${blockClass}__accordion-container ${blockClass}__main-link-wrapper">
-        <div class="${blockClass}__accordion-content-wrapper">
+  if (list) {
+    list.setAttribute('id', 'header-main-nav');
+    list.classList.add(`${blockClass}__main-nav`);
+    list.querySelectorAll('li').forEach((listItem) => {
+      const accordionContainer = document.createRange().createContextualFragment(`
+        <div class="${blockClass}__accordion-container ${blockClass}__main-link-wrapper">
+          <div class="${blockClass}__accordion-content-wrapper">
+          </div>
+          <div class="desktop-wrapper"></div>
+          <div class="desktop-wrapper-footer"></div>
         </div>
-        <div class="desktop-wrapper"></div>
-        <div class="desktop-wrapper-footer"></div>
-      </div>
+      `);
+
+      listItem.classList.add(`${blockClass}__main-nav-item`);
+      listItem.append(accordionContainer);
+
+      const mainNavLink = listItem.querySelector('a');
+      mainNavLink.setAttribute('id', generateId('main-nav'));
+    });
+    list.querySelectorAll('li > a').forEach((link) => {
+      link.classList.add(`${blockClass}__main-nav-link`, `${blockClass}__link`, `${blockClass}__link-accordion`);
+    });
+
+    const closeMenuLabel = getTextLabel('Close menu');
+    const closeIcon = document.createRange().createContextualFragment(`
+      <li class="${blockClass}__action-item ${blockClass}__action-item--close-menu">
+        <button
+          aria-label="${closeMenuLabel}"
+          class="${blockClass}__close-menu"
+          aria-expanded="false"
+          aria-controls="header-main-nav, header-actions-list"
+        >
+          <span class="icon icon-close" />
+        </button>
+      </li>
     `);
 
-    listItem.classList.add(`${blockClass}__main-nav-item`);
-    listItem.append(accordionContainer);
+    list.prepend(closeIcon);
 
-    const mainNavLink = listItem.querySelector('a');
-    mainNavLink.setAttribute('id', generateId('main-nav'));
-  });
-  list.querySelectorAll('li > a').forEach((link) => {
-    link.classList.add(`${blockClass}__main-nav-link`, `${blockClass}__link`, `${blockClass}__link-accordion`);
-  });
-
-  const closeMenuLabel = getTextLabel('Close menu');
-  const closeIcon = document.createRange().createContextualFragment(`
-    <li class="${blockClass}__action-item ${blockClass}__action-item--close-menu">
-      <button
-        aria-label="${closeMenuLabel}"
-        class="${blockClass}__close-menu"
-        aria-expanded="false"
-        aria-controls="header-main-nav, header-actions-list"
-      >
-        <span class="icon icon-close" />
-      </button>
-    </li>
-  `);
-
-  list.prepend(closeIcon);
-
-  return list;
+    return list;
+  }
+  return null;
 };
 
 const createActions = (actionsWrapper) => {
@@ -393,6 +395,16 @@ const buildMenuContent = (menuData, navEl) => {
   });
 };
 
+const decorateCTA = (wrapper) => {
+  const anchorTags = wrapper.querySelectorAll('a');
+  anchorTags.forEach((link) => {
+    link.classList.add(`${blockClass}__custom-button`, 'button', 'button--primary');
+    wrapper.appendChild(link);
+  });
+  wrapper.firstElementChild.remove();
+  return wrapper;
+};
+
 /**
  * decorates the header, mainly the nav
  * @param {Element} block The header block element
@@ -404,7 +416,19 @@ export default async function decorate(block) {
   // fetch nav content
   const { pathname } = new URL(window.location.href);
   const langCodeMatch = pathname.match('^(/[a-z]{2}(-[a-z]{2})?/).*');
-  const navPath = `${langCodeMatch ? langCodeMatch[1] : '/'}nav`;
+  let navPath = `${langCodeMatch ? langCodeMatch[1] : '/'}nav`;
+
+  const isCustomHeader = getMetadata('custom-header');
+  if (isCustomHeader) {
+    navPath = `${langCodeMatch ? langCodeMatch[1] : ''}${isCustomHeader}`;
+    block.classList.add(`${blockClass}__custom`);
+
+    const customStyles = getMetadata('custom-header-style');
+    if (customStyles) {
+      block.classList.add(`${blockClass}__custom--${customStyles}`);
+    }
+  }
+
   const resp = await fetch(`${navPath}.plain.html`);
 
   if (!resp.ok) {
@@ -425,12 +449,12 @@ export default async function decorate(block) {
   const navContent = document.createRange().createContextualFragment(`
     <div class="${blockClass}__menu-overlay"></div>
     ${createLogo(logoContainer).outerHTML}
-    <div class="${blockClass}__main-links">
+    ${navigationContainer.children.length ? `<div class="${blockClass}__main-links">
       ${createMainLinks(navigationContainer).outerHTML}
-    </div>
+    </div>` : ''}
     <div class="${blockClass}__actions">
-      ${mobileActions().outerHTML}
-      ${createActions(actionsContainer).outerHTML}
+      ${isCustomHeader ? '' : mobileActions().outerHTML}
+      ${isCustomHeader ? decorateCTA(actionsContainer).outerHTML : createActions(actionsContainer).outerHTML}
     </div>
   `);
 
@@ -490,7 +514,7 @@ export default async function decorate(block) {
   }
 
   // add action for hamburger
-  navContent.querySelector(`.${blockClass}__hamburger-menu`).addEventListener('click', () => {
+  navContent.querySelector(`.${blockClass}__hamburger-menu`)?.addEventListener('click', () => {
     block.classList.add(`${blockClass}--hamburger-open`);
     onNavExpandChange(true);
     setAriaForMenu(true);
@@ -507,7 +531,9 @@ export default async function decorate(block) {
   block.append(nav);
 
   setAriaForMenu(false);
-  buildMenuContent(menuContent, nav);
+  if (menuContent) {
+    buildMenuContent(menuContent, nav);
+  }
   initAriaForAccordions();
 
   // hiding nav when clicking outside the menu
@@ -581,16 +607,18 @@ export default async function decorate(block) {
     }
   };
 
-  desktopMQ.addEventListener('change', (e) => {
-    const isDesktop = e.matches;
+  if (!isCustomHeader) {
+    desktopMQ.addEventListener('change', (e) => {
+      const isDesktop = e.matches;
 
-    setupAriaAndTabIndexes(isDesktop);
-    swapMenuMountPoint(isDesktop);
-    swapActionsLinks(isDesktop);
-  });
+      setupAriaAndTabIndexes(isDesktop);
+      swapMenuMountPoint(isDesktop);
+      swapActionsLinks(isDesktop);
+    });
 
-  setupAriaAndTabIndexes(desktopMQ.matches);
-  swapMenuMountPoint(desktopMQ.matches);
-  swapActionsLinks(desktopMQ.matches);
+    setupAriaAndTabIndexes(desktopMQ.matches);
+    swapMenuMountPoint(desktopMQ.matches);
+    swapActionsLinks(desktopMQ.matches);
+  }
   decorateIcons(block);
 }

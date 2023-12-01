@@ -1,4 +1,9 @@
-import { readBlockConfig, decorateIcons, loadBlocks } from '../../scripts/lib-franklin.js';
+import {
+  readBlockConfig,
+  decorateIcons,
+  loadBlocks,
+  getMetadata,
+} from '../../scripts/lib-franklin.js';
 import {
   createElement, getTextLabel, isEloquaFormAllowed,
 } from '../../scripts/common.js';
@@ -45,7 +50,7 @@ function addScrollToTopButton(mainEl) {
     },
   });
   const svgIcon = document.createRange().createContextualFragment(`
-    <svg xmlns="http://www.w3.org/2000/svg"><use href="#icons-sprite-arrow-right"></use></svg>`);
+    <span class="icon icon-arrow-right" />`);
   scrollToTopButton.append(...svgIcon.children);
 
   scrollToTopButton.addEventListener('click', goToTopFunction);
@@ -78,7 +83,14 @@ export default async function decorate(block) {
   const cfg = readBlockConfig(block);
   block.textContent = '';
 
-  const footerPath = cfg.footer || '/footer';
+  let footerPath = cfg.footer || '/footer';
+  const isCustomFooter = getMetadata('custom-footer');
+
+  if (isCustomFooter) {
+    footerPath = isCustomFooter;
+    block.classList.add(`${blockName}__custom`);
+  }
+
   const resp = await fetch(`${footerPath}.plain.html`);
   const html = await resp.text();
 
@@ -157,11 +169,16 @@ export default async function decorate(block) {
     // Menu Columns: Newsletter form
     const newsletter = createElement('div', { classes: blockNameNewsletter });
     const oldNews = footerMenu.querySelector(':scope > div:last-child');
-    newsletter.appendChild(oldNews);
+
+    if (oldNews) {
+      newsletter.appendChild(oldNews);
+    }
 
     const eloquaForm = block.querySelector('.eloqua-form');
-    eloquaForm?.setAttribute('data-block-name', 'eloqua-form');
-    newsletter.append(eloquaForm);
+    if (eloquaForm) {
+      eloquaForm?.setAttribute('data-block-name', 'eloqua-form');
+      newsletter.append(eloquaForm);
+    }
     addClassToTitle(newsletter, `${blockNameNewsletter}__title`);
 
     // Menu Columns: menu
@@ -170,8 +187,14 @@ export default async function decorate(block) {
     const menuList = menu.querySelectorAll(':scope > div');
     menuList.forEach((item) => item.classList.add(`${blockNameMenu}__column`));
 
-    newMenu.appendChild(menu);
-    newMenu.appendChild(newsletter);
+    if (menu.children.length) {
+      newMenu.appendChild(menu);
+    }
+
+    if (newsletter.children.length) {
+      newMenu.appendChild(newsletter);
+    }
+
     newFooter.append(newMenu);
   }
 
@@ -182,6 +205,8 @@ export default async function decorate(block) {
   }
 
   block.innerHTML = newFooter.innerHTML;
+
+  addScrollToTopButton(block);
 
   await decorateIcons(block);
   await loadBlocks(block);
@@ -243,18 +268,18 @@ export default async function decorate(block) {
   };
 
   const eloquaForm = block.querySelector('.eloqua-form');
-  observer = new MutationObserver(onFormLoaded);
-  observer.observe(eloquaForm, {
-    childList: true,
-    attributes: false,
-    subtree: true,
-  });
+  if (eloquaForm) {
+    observer = new MutationObserver(onFormLoaded);
+    observer.observe(eloquaForm, {
+      childList: true,
+      attributes: false,
+      subtree: true,
+    });
+  }
 
   block.addEventListener('click', (e) => {
     if (e.target.classList.contains(`${blockNameTruckList}__title`)) {
       toggleExpand(e.target);
     }
   });
-
-  addScrollToTopButton(block);
 }

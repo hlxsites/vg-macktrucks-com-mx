@@ -507,3 +507,22 @@
     margin: 0 auto;
   }
 }
+
+/* cutsom footer styles */
+.footer__custom .footer-menu {
+  grid-template-areas: 'logo'
+    'social';
+}
+
+@media (min-width: 1140px) {
+  .footer__custom .footer-menu {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+    /* stylelint-disable-next-line declaration-block-no-redundant-longhand-properties */
+    grid-template-areas: 'logo social';
+  }
+
+  .footer__custom .footer-menu__socialmedia {
+    justify-self: flex-end;
+  }
+}

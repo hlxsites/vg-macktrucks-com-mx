@@ -2,6 +2,10 @@
   padding: 0;
 }
 
+.vin-number__refresh-date-wrapper {
+  text-align: center;
+}
+
 .vin-number__form {
   display: flex;
   gap: 8px;
