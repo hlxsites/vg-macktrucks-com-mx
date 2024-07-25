@@ -243,8 +243,10 @@ export default async function decorate(block) {
             </div>
             <div class="detail-share">
 
-                <button type="button" class="accordion"><img
-                        src="/blocks/dealer-locator/images/Share.svg"/><span>SHARE</span></button>
+                <a id="share" class="accordion">
+                    <img src="/blocks/dealer-locator/images/Share.svg"/>
+                    SHARE
+                </a>
                 <div class="accordion-panel">
                     <input type="text" id="share-link" value="" onclick="this.select();"/>
                 </div>
@@ -268,7 +270,8 @@ export default async function decorate(block) {
                         <br/>
                         <div id="address2">
                             <div></div>
-                        </div>
+                            </div>
+                        <br/>
                         <div id="city-state-zip">
                             <div></div>
                         </div>
@@ -289,9 +292,9 @@ export default async function decorate(block) {
                                     class="tooltiptext link">Open website</span></i>
                         </div>
                     </li>
-                    <li id="email">
-
-                        <div></div>
+                    <li>
+                        <img src="/blocks/dealer-locator/images/Mail.svg"/>
+                        <div id="email" ></div>
                     </li>
 
 
@@ -311,7 +314,7 @@ export default async function decorate(block) {
     <div class="panel-card">
         <div class="panel-container">
             <article class="teaser">
-                <div class="marker-main" style="width: 15%;">
+                <div class="marker-main">
                     <img id="marker" src=""/>
                 </div>
                 <div class="dealerPanelContainer">

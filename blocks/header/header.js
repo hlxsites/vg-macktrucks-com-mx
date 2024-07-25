@@ -1,17 +1,18 @@
 import {
-  createElement, generateId, getTextLabel,
+  createElement,
+  decorateIcons,
+  generateId,
+  getTextLabel,
+  HEADER_CONFIGS,
 } from '../../scripts/common.js';
-import { createOptimizedPicture, decorateIcons, getMetadata } from '../../scripts/lib-franklin.js';
+import {
+  createOptimizedPicture,
+  getMetadata,
+} from '../../scripts/lib-franklin.js';
 import { getAllElWithChildren } from '../../scripts/scripts.js';
 
-// domain examples: '.com', 'nicaragua.com', '.com.pa', '.ca'
-const loginDomains = ['.com'];
-const searchDomains = ['.com'];
-const url = new URL(window.location.href);
-const isDev = url.host.match('localhost') || url.host.match('hlx.(page|live)');
-const isSearchDomain = !isDev
-  && searchDomains.some((domain) => url.host.endsWith(`macktrucks${domain}`));
-const isLoginDomain = loginDomains.some((domain) => url.host.endsWith(`macktrucks${domain}`));
+// check if the header has to have a login and/or a search button
+const { SEARCH_DISABLED, LOGIN_DISABLED } = HEADER_CONFIGS;
 
 const blockClass = 'header';
 
@@ -36,10 +37,11 @@ const createLogo = (logoWrapper) => {
   (logoLink || logoImage).classList.add(`${blockClass}__logo-image-wrapper`);
 
   if (logoLink) {
-    const logoLinkText = createElement('span', { classes: ['screenreader'] });
-    logoLinkText.append('Go to Mack Trucks homepage');
+    const logoLinkTextContainer = createElement('span', { classes: ['screenreader'] });
+    const logoLinkText = getTextLabel('Logo link');
+    logoLinkTextContainer.append(logoLinkText);
 
-    logoLink.append(logoLinkText);
+    logoLink.append(logoLinkTextContainer);
   }
 
   return logoLink || logoImage;
@@ -124,14 +126,14 @@ const mobileActions = () => {
   const openMenuLabel = getTextLabel('Open menu');
 
   const actions = document.createRange().createContextualFragment(`
+    ${SEARCH_DISABLED.toLowerCase() === 'false' ? `
     <a
-      href="${isSearchDomain ? '/search' : '#'}"
-      ${isSearchDomain ? `aria-label="${searchLabel}"` : 'aria-hidden="true"'}
-      ${isSearchDomain ? '' : 'style="visibility: hidden;"'}
+      href="/search"
+      aria-label="${searchLabel}"
       class="${blockClass}__search-button ${blockClass}__action-link ${blockClass}__link"
     >
       <span class="icon icon-search" aria-hidden="true"></span>
-    </a>
+    </a>` : ''}
     <button
       aria-label="${openMenuLabel}"
       class="${blockClass}__hamburger-menu ${blockClass}__action-link ${blockClass}__link"
@@ -321,6 +323,8 @@ const buildMenuContent = (menuData, navEl) => {
 
   [...menus.children].forEach((menuItemData) => {
     const tabName = menuItemData.querySelector(':scope > p > a');
+    if (!tabName) return;
+
     const categories = [...menuItemData.querySelectorAll(':scope > div')];
     const navLink = navLinks.find((el) => el.textContent.trim() === tabName.textContent.trim());
     const accordionContentWrapper = navLink?.closest(`.${blockClass}__main-nav-item`).querySelector(`.${blockClass}__accordion-content-wrapper`);
@@ -419,6 +423,7 @@ export default async function decorate(block) {
   let navPath = `${langCodeMatch ? langCodeMatch[1] : '/'}nav`;
 
   const isCustomHeader = getMetadata('custom-header');
+  const isMobileMenuDisabled = getMetadata('custom-header-mobile-menu').toLowerCase() === 'false';
   if (isCustomHeader) {
     navPath = `${langCodeMatch ? langCodeMatch[1] : ''}${isCustomHeader}`;
     block.classList.add(`${blockClass}__custom`);
@@ -428,6 +433,9 @@ export default async function decorate(block) {
       block.classList.add(`${blockClass}__custom--${customStyles}`);
     }
   }
+
+  const testHeader = getMetadata('test-header');
+  if (testHeader) navPath = testHeader;
 
   const resp = await fetch(`${navPath}.plain.html`);
 
@@ -453,8 +461,8 @@ export default async function decorate(block) {
       ${createMainLinks(navigationContainer).outerHTML}
     </div>` : ''}
     <div class="${blockClass}__actions">
-      ${isCustomHeader ? '' : mobileActions().outerHTML}
-      ${isCustomHeader ? decorateCTA(actionsContainer).outerHTML : createActions(actionsContainer).outerHTML}
+      ${isMobileMenuDisabled ? '' : mobileActions().outerHTML}
+      ${isMobileMenuDisabled ? decorateCTA(actionsContainer).outerHTML : createActions(actionsContainer).outerHTML}
     </div>
   `);
 
@@ -507,8 +515,8 @@ export default async function decorate(block) {
   };
 
   // add actions for search
-  if (isSearchDomain) {
-    navContent.querySelector(`.${blockClass}__search-button`).addEventListener('click', () => {
+  if (SEARCH_DISABLED.toLowerCase() === 'false') {
+    navContent.querySelector(`.${blockClass}__search-button`)?.addEventListener('click', () => {
       window.location.href = '/search';
     });
   }
@@ -578,7 +586,7 @@ export default async function decorate(block) {
     const buttonsWithoutIcons = getAllElWithChildren([...actionsLinks.querySelectorAll('a')], '.icon', true);
     const loginLink = actionsLinks.querySelector('.header__action-item a[href*="login"]');
 
-    if (!isLoginDomain) loginLink.parentElement.style.display = 'none';
+    if (loginLink && LOGIN_DISABLED.toLowerCase() === 'true') loginLink.remove();
 
     if (isDesktop) {
       actionsLinksDesktopMountPoint.append(actionsLinks);
@@ -607,7 +615,7 @@ export default async function decorate(block) {
     }
   };
 
-  if (!isCustomHeader) {
+  if (!isMobileMenuDisabled) {
     desktopMQ.addEventListener('change', (e) => {
       const isDesktop = e.matches;
 
