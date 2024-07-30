@@ -29,6 +29,9 @@ const valueDisplayList = [{
   key: 'nhtsa_recall_number',
 },
 {
+  key: 'tc_recall_nbr',
+},
+{
   key: 'mfr_recall_status',
 },
 {
@@ -107,16 +110,32 @@ async function fetchRefreshDate() {
   return null;
 }
 
-function capitalize(text) {
-  return text.toLowerCase().split('').map((char, index) => (index === 0 ? char.toUpperCase() : char)).join('');
-}
-
 function renderRecalls(recallsData) {
   const resultText = document.querySelector(`.${blockName}__results-text`);
-  resultText.innerText = getTextLabel('result text').replace(/\${count}/, recallsData.number_of_recalls).replace(/\${vin}/, recallsData.vin);
+  let resultContent = getTextLabel('result text').replace(/\${count}/, recallsData.number_of_recalls).replace(/\${vin}/, recallsData.vin);
+
+  const blockEl = document.querySelector(`.${blockName}__recalls-wrapper`);
+
+  const recallsMake = createElement('div', { classes: `${blockName}__recalls-make-wrapper` });
+  const makeFragment = docRange.createContextualFragment(`
+    <div class="${blockName}__recalls-md-row">
+      <h5 class="${blockName}__recalls-md-title">${getTextLabel('model year')}</h5>
+      <span> ${recallsData.year}</span>
+    </div>
+    <div class="${blockName}__recalls-md-row">
+      <h5 class="${blockName}__recalls-md-title">${getTextLabel('make')}</h5>
+      <span> ${recallsData.make}</span>
+    </div>
+    <div class="${blockName}__recalls-md-row">
+      <h5 class="${blockName}__recalls-md-title">${getTextLabel('model')}</h5>
+      <span> ${recallsData.model}</span>
+    </div>
+  `);
+
+  recallsMake.append(...makeFragment.children);
+  blockEl.append(recallsMake);
 
   if (recallsData.recalls_available) {
-    const blockEl = document.querySelector(`.${blockName}__recalls-wrapper`);
     const listWrapperFragment = docRange.createContextualFragment(`
       <div class="${blockName}__recalls-heading-wrapper">
         <span class="${blockName}__recalls-alert-icon">
@@ -144,7 +163,7 @@ function renderRecalls(recallsData) {
       valueDisplayList.forEach((item) => {
         if (recall[item.key]) {
           const recallClass = item.key === 'mfr_recall_status' ? `${blockName}__${recall.mfr_recall_status.replace(/_/g, '-').toLowerCase()}` : '';
-          let itemValue = item.class ? capitalize(recall[item.key]) : recall[item.key];
+          let itemValue = recall[item.key];
 
           if (recallClass) {
             itemValue = getTextLabel(recall[item.key]);
@@ -163,7 +182,10 @@ function renderRecalls(recallsData) {
 
     blockEl.append(listWrapperFragment);
     blockEl.appendChild(list);
+  } else {
+    resultContent = `${resultContent} [${getTextLabel('recall_available_info')} ${recallsData.recalls_since}]`;
   }
+  resultText.innerText = resultContent;
 }
 
 async function fetchRecalls(e) {
@@ -235,11 +257,11 @@ export default async function decorate(block) {
         maxlength="17"
         required
         class="${blockName}__input"
-        pattern="^[1,4][M][1,2,4,5][A,G,L,P,T,M][A-Za-z0-9]{13}$"
+        pattern="^[1,4][M,m][1,2,4,5][A,G,L,P,T,M,a,g,l,p,t,m][A-Za-z0-9]{13}$"
       />
       <label for="vin_number" class="${blockName}__label">${getTextLabel('vinlabel')}</label>
     </div>
-    <button class="button primary ${blockName}__submit" type="submit" name="submit">${getTextLabel('submit')}</button>
+    <button class="button button--primary ${blockName}__submit" type="submit" name="submit">${getTextLabel('submit')}</button>
   `);
 
   const vinResultsContainer = createElement('div', { classes: `${blockName}__results-container` });
